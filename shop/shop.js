@@ -2,6 +2,16 @@ window.onload = function(){
     let cart = {};
     let goods = {};
 
+    //делаем загрузку корзины из localstorage
+    function loadCartFromStorage(){
+        if ( localStorage.getItem('cart') != undefined){
+            cart = JSON.parse( localStorage.getItem('cart'));
+        }
+        console.log(cart);
+    }
+
+    loadCartFromStorage();
+
     // послать запрос
     let getJSON = function(url, callback){
         let xhr = new XMLHttpRequest();
@@ -30,6 +40,7 @@ window.onload = function(){
             goods = arrayHelper(data);
             console.log(goods);
             document.querySelector('.shop-field').innerHTML = showGoods(data);
+            showCart();
         }
     });
 
@@ -56,6 +67,29 @@ window.onload = function(){
         if (e.target.attributes.name.nodeValue == 'add-to-cart'){
             addToCart(e.target.attributes.data.nodeValue);
         }
+        else if (e.target.attributes.name.nodeValue == 'delete-goods'){
+            delete cart[e.target.attributes.data.nodeValue];
+            showCart();
+            localStorage.setItem('cart', JSON.stringify(cart));
+            console.log(cart);
+        }
+        else if (e.target.attributes.name.nodeValue == 'plus-goods'){
+            cart[e.target.attributes.data.nodeValue]++;
+            showCart();
+            localStorage.setItem('cart', JSON.stringify(cart));
+            console.log(cart);
+        }
+        else if (e.target.attributes.name.nodeValue == 'minus-goods'){
+            if (cart[e.target.attributes.data.nodeValue] - 1 == 0 ){
+                delete cart[e.target.attributes.data.nodeValue];
+            }
+            else {
+                cart[e.target.attributes.data.nodeValue]--;
+            }
+            showCart();
+            localStorage.setItem('cart', JSON.stringify(cart));
+            console.log(cart);
+        }
     }
 
     function addToCart(elem){
@@ -67,6 +101,7 @@ window.onload = function(){
         }
         console.log(cart);
         showCart();
+        localStorage.setItem('cart', JSON.stringify(cart));
     }
 
     function arrayHelper(arr){
@@ -90,11 +125,16 @@ window.onload = function(){
         for (let key in cart){
             let li = '<li>';
             li += goods[key]['name'] + ' ';
+            li +=` <button name="minus-goods" data="${key}">-</button> `;
             li += cart[key]+'шт ';
-            li += goods[key]['cost']*cart[key];
+            li +=` <button name="plus-goods" data="${key}">+</button> `;
+            li += goods[key]['cost']*cart[key]+'денег';
+            li +=` <button name="delete-goods" data="${key}">x</button>`;
+            li +='</li>';
             sum += goods[key]['cost']*cart[key];
             ul.innerHTML += li;
         }
-        ul.innerHTML += 'Итого: '+sum;
+        ul.innerHTML += 'Итого: '+sum+'денег';
+
     }
 }
